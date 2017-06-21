@@ -1,6 +1,7 @@
 package com.faceswap.controller;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.bridj.util.Pair;
 
+import static com.faceswap.Utils.STATIC_IMAGE;
+
 public class SwapService {
 
 	private static final Integer THREAD_POOL_SIZE = 10;
@@ -27,6 +30,11 @@ public class SwapService {
 	 * @return
 	 */
 	public BufferedImage[] processImages(ConcurrentMap<Integer, BufferedImage> frames) {
+		try {
+			Runtime.getRuntime().exec("python get_landmarks.py " + STATIC_IMAGE).waitFor();
+		} catch (InterruptedException | IOException e) {
+			System.err.println(e.getMessage());
+		}
 		System.out.println("Start swapping " + frames.size() + " frames");
 
 		ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);

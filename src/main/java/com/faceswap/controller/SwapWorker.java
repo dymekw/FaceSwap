@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
 
+import com.faceswap.Utils;
 import org.bridj.util.Pair;
 
 public class SwapWorker implements Callable<Pair<Integer, BufferedImage>> {
@@ -62,7 +63,7 @@ public class SwapWorker implements Callable<Pair<Integer, BufferedImage>> {
 	}
 	
 	private String getPythonCommand(String fileName) {
-		return "python faceswap.py " + fileName + " face.jpg";
+		return "python faceswap.py " + fileName + " " + Utils.STATIC_IMAGE;
 	}
 
 }

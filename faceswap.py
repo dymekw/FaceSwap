@@ -4,8 +4,10 @@ import numpy
 from datetime import datetime
 import sys
 from os.path import basename
+import pickle
 
 PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
+SERIALIZED_FILE = "static_landmarks.pkl"
 SCALE_FACTOR = 1 
 FEATHER_AMOUNT = 11
 
@@ -98,12 +100,19 @@ def transformation_from_points(points1, points2):
                                        c2.T - (s2 / s1) * R * c1.T)),
                          numpy.matrix([0., 0., 1.])])
 
-def read_im_and_landmarks(fname):
+def read_im(fname):
     im = cv2.imread(fname, cv2.IMREAD_COLOR)
 
-    s = get_landmarks(im)
+    return im
 
-    return im, s
+def read_landmarks(im, static_image):
+    if static_image:
+        static_landmarks_file = open(SERIALIZED_FILE, 'rb')
+        landmarks = pickle.load(static_landmarks_file)
+        return landmarks
+    else:
+        landmarks = get_landmarks(im)
+        return landmarks
 
 def warp_im(im, M, dshape):
     output_im = numpy.zeros(dshape, dtype=im.dtype)
@@ -132,8 +141,10 @@ def correct_colours(im1, im2, landmarks1):
                                                 im2_blur.astype(numpy.float64))
 
 
-im2, landmarks2 = read_im_and_landmarks(sys.argv[2])
-im1, landmarks1 = read_im_and_landmarks(sys.argv[1])
+im2 = read_im(sys.argv[2])
+landmarks2 = read_landmarks(im2, True)
+im1 = read_im(sys.argv[1])
+landmarks1 = read_landmarks(im1, False)
 
 mask = get_face_mask(im2, landmarks2)
 
