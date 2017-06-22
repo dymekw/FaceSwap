@@ -140,27 +140,33 @@ def correct_colours(im1, im2, landmarks1):
     return (im2.astype(numpy.float64) * im1_blur.astype(numpy.float64) /
                                                 im2_blur.astype(numpy.float64))
 
-
+fromId = int(sys.argv[3])
+toId = int(sys.argv[4])
 im2 = read_im(sys.argv[2])
 landmarks2 = read_landmarks(im2, True)
-im1 = read_im(sys.argv[1])
-landmarks1 = read_landmarks(im1, False)
-
 mask = get_face_mask(im2, landmarks2)
 
-M = transformation_from_points(landmarks1[ALIGN_POINTS],
-                               landmarks2[ALIGN_POINTS])
-
-warped_mask = warp_im(mask, M, im1.shape)
-
-combined_mask = numpy.max([get_face_mask(im1, landmarks1), warped_mask],
-                          axis=0)
-
-warped_im2 = warp_im(im2, M, im1.shape)
-
-warped_corrected_im2 = correct_colours(im1, warped_im2, landmarks1)
-
-output_im = im1 * (1.0 - combined_mask) + warped_corrected_im2 * combined_mask
-
-cv2.imwrite(str(sys.argv[1] + 'output.jpg'), output_im)
-
+for imageId in range(fromId, toId):
+	try:
+		fileName = str(imageId) + sys.argv[1]
+	
+		im1 = read_im(fileName)
+		landmarks1 = read_landmarks(im1, False)
+		
+		M = transformation_from_points(landmarks1[ALIGN_POINTS],
+		                               landmarks2[ALIGN_POINTS])
+		
+		warped_mask = warp_im(mask, M, im1.shape)
+		
+		combined_mask = numpy.max([get_face_mask(im1, landmarks1), warped_mask],
+		                          axis=0)
+		
+		warped_im2 = warp_im(im2, M, im1.shape)
+		
+		warped_corrected_im2 = correct_colours(im1, warped_im2, landmarks1)
+		
+		output_im = im1 * (1.0 - combined_mask) + warped_corrected_im2 * combined_mask
+				
+		cv2.imwrite(fileName + 'output.jpg', output_im)
+	except:
+		cv2.imwrite(fileName + 'output.jpg', im1)

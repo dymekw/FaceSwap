@@ -3,67 +3,83 @@ package com.faceswap.controller;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.imageio.ImageIO;
 
 import com.faceswap.Utils;
-import org.bridj.util.Pair;
 
-public class SwapWorker implements Callable<Pair<Integer, BufferedImage>> {
+public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
 	
 	private static final String BEFORE_SWAPPING_SUFFIX = "_saved.jpg";
 	private static final String AFTER_SWAPPING_SUFFIX = BEFORE_SWAPPING_SUFFIX + "output.jpg";
-	
-	private BufferedImage image;
-    private Integer id;
+    
+    private ConcurrentMap<Integer, BufferedImage> images;
+    private Integer from;
+    private Integer to;
 
-    public SwapWorker(BufferedImage image, Integer id) {
-		this.image = image;
-		this.id = id;
-	}
-
-	public Pair<Integer, BufferedImage> call() {
-		System.out.println(Thread.currentThread().getName() + " start processing frame :" + id);
-		Pair<Integer, BufferedImage> result = new Pair<>();
+    
+    public SwapWorker(ConcurrentMap<Integer, BufferedImage> images, Integer from, Integer to) {
+    	this.images = images;
+    	this.from = from;
+    	this.to = to;
+    }
+    
+    @Override
+	public Map<Integer, BufferedImage> call() throws Exception {
+    	System.out.println(Thread.currentThread().getName() + " start processing frames: [" + from + ", " + to + ")");
+		Map<Integer, BufferedImage> swappedImages = new HashMap<>();
 		
-        try {
-        	if (executeSwapping() == 0) {
-        		result = new Pair<>(id, getResultFile());
-        	}
-        } catch (Exception e) {
-        	System.err.println(e.getMessage());
-        }
-        
-        return result;
-	}
-	
-	private BufferedImage getResultFile() throws IOException, InterruptedException {
-		File inputfile = new File(id + AFTER_SWAPPING_SUFFIX);
-		
-		while(!inputfile.exists()) {
-			Thread.sleep(10);
+		if (swap() == 0) {
+			for (int i=from; i<to; i++) {
+				File inputfile = new File(i + AFTER_SWAPPING_SUFFIX);
+				while(!inputfile.exists()) {
+					Thread.sleep(10);
+				}
+				swappedImages.put(i, ImageIO.read(inputfile));
+		        inputfile.delete();
+			} 
 		}
 		
-        BufferedImage swappedFace = ImageIO.read(inputfile);
-        inputfile.delete();
-        
-        return swappedFace;
+		return swappedImages;
 	}
-	
-	private int executeSwapping() throws IOException, InterruptedException {
-		File outputfile = new File(id + BEFORE_SWAPPING_SUFFIX);
-	    ImageIO.write(image, "jpg", outputfile);
-	    
-    	int result = Runtime.getRuntime().exec(getPythonCommand(id + BEFORE_SWAPPING_SUFFIX)).waitFor();
-
-		outputfile.delete();
+    
+    private int swap() throws InterruptedException, IOException {
+    	Collection<File> outputFiles = new LinkedList<File>();
+    	
+		for (int i=from; i<to; i++) {
+			File outputfile = new File(i + BEFORE_SWAPPING_SUFFIX);
+			ImageIO.write(images.get(i), "jpg", outputfile);
+			outputFiles.add(outputfile);
+		}
 		
-		return result;
-	}
+		int executeSwapping = Runtime.getRuntime().exec(getPythonBulkCommand(BEFORE_SWAPPING_SUFFIX, from, to)).waitFor();
+		for (File file : outputFiles) {
+			file.delete();
+		}
+		
+		return executeSwapping;
+    }
 	
-	private String getPythonCommand(String fileName) {
-		return "python faceswap.py " + fileName + " " + Utils.STATIC_IMAGE;
+	private String getPythonBulkCommand(String fileName, int from, int to) {
+		StringJoiner joiner = new StringJoiner(" ");
+		String[] command = {
+				"python",
+				"faceswap.py",
+				fileName,
+				Utils.STATIC_IMAGE,
+				Integer.toString(from),
+				Integer.toString(to)
+		};
+		for (String cmd : command) {
+			joiner.add(cmd);
+		}
+		return joiner.toString();
 	}
-
 }
