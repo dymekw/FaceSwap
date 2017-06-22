@@ -13,6 +13,7 @@ public class TestWebcamListener extends FaceSwapWebcamListener{
 	private MovieMaker movieMaker = null;
 
 	public TestWebcamListener(FramesProvider framesProvider, SwapService swapService, MovieMaker movieMaker) {
+		super(null);
 		this.framesProvider = framesProvider;
 		this.swapService = swapService;
 		this.movieMaker = movieMaker;

@@ -29,6 +29,7 @@ public class FramesProvider {
 	}
 
 	public void startRecording() {
+		frames.clear();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			  @Override
@@ -39,9 +40,14 @@ public class FramesProvider {
 	}
 	
 	public ConcurrentMap<Integer, BufferedImage> stopRecording() {
+		System.out.println("Number of frames: " + frames.size());
 		if (Objects.nonNull(timer)) {
 			timer.cancel();
 		}
 		return frames;
+	}
+	
+	public int countRecordedFrames() {
+		return frames.size();
 	}
 }

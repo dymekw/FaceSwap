@@ -1,16 +1,22 @@
 package com.faceswap.view;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.BasicConfigurator;
+
+import com.faceswap.controller.FramesProvider;
 import com.faceswap.view.listeners.FaceSwapItemListener;
 import com.faceswap.view.listeners.FaceSwapWebcamDiscoveryListener;
 import com.faceswap.view.listeners.FaceSwapWebcamListener;
 import com.faceswap.view.listeners.FaceSwapWindowListener;
+import com.faceswap.view.listeners.RecordingButtonListener;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamDiscoveryListener;
 import com.github.sarxos.webcam.WebcamListener;
@@ -25,18 +31,22 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 	protected WebcamPanel panel = null;
 	protected WebcamPicker picker = null;
 	
+	protected JToggleButton recordingButton = createStartRecordingButton();
+	protected FramesProvider framesProvider = null;
+	
 	public static void main(String[] args) {
+		BasicConfigurator.configure();
 		SwingUtilities.invokeLater(new FaceSwapAppFrame());
 	}
 
 	@Override
 	public void run() {
 		
-		setTitle("Java Webcam Capture POC");
+		setTitle("FaceSwap hołm ediszyn");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
 		
-		WebcamListener webcamListener = new FaceSwapWebcamListener();
+		WebcamListener webcamListener = new FaceSwapWebcamListener(recordingButton);
 		
 		picker = new WebcamPicker();
 		
@@ -47,6 +57,9 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		}
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
 		webcam.addWebcamListener(webcamListener);
+		
+		framesProvider = new FramesProvider(webcam);
+		recordingButton.addActionListener(createRecordingButtonListener(framesProvider));
 		
 		panel = new WebcamPanel(webcam, false);
 		panel.setFPSDisplayed(true);
@@ -62,6 +75,7 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		
 		add(picker, BorderLayout.NORTH);
 		add(panel, BorderLayout.CENTER);
+		add(recordingButton, BorderLayout.SOUTH);
 		
 		pack();
 		setVisible(true);
@@ -76,6 +90,17 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		t.setName("example-starter");
 		t.setDaemon(true);
 		t.start();
+	}
+	
+	private JToggleButton createStartRecordingButton() {
+		JToggleButton startRecording = new JToggleButton("Start recording");
+		startRecording.setEnabled(false);
+
+		return startRecording;
+	}
+	
+	private ActionListener createRecordingButtonListener(FramesProvider framesProvider) {
+		return new RecordingButtonListener(recordingButton, framesProvider, this);
 	}
 
 }

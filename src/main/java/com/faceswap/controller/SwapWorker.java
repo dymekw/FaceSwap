@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.imageio.ImageIO;
 
 import com.faceswap.Utils;
+import com.faceswap.view.listeners.ProgressListener;
 
 public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
 	
@@ -23,12 +24,14 @@ public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
     private ConcurrentMap<Integer, BufferedImage> images;
     private Integer from;
     private Integer to;
+    private ProgressListener progressListener;
 
     
-    public SwapWorker(ConcurrentMap<Integer, BufferedImage> images, Integer from, Integer to) {
+    public SwapWorker(ConcurrentMap<Integer, BufferedImage> images, Integer from, Integer to, ProgressListener progressListener) {
     	this.images = images;
     	this.from = from;
     	this.to = to;
+    	this.progressListener = progressListener;
     }
     
     @Override
@@ -44,6 +47,7 @@ public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
 				}
 				swappedImages.put(i, ImageIO.read(inputfile));
 		        inputfile.delete();
+		        progressListener.propertyChange(null);
 			} 
 		}
 		

@@ -17,11 +17,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.faceswap.view.listeners.ProgressListener;
+
 public class SwapService {
 
 	private static final Integer THREAD_POOL_SIZE = 10;
 	private static final Integer FRAMES_PER_WORKER = 40;
 	private static final Integer MAX_FREEZE_TIME = 2;
+	
+	private ProgressListener progressListener;
+	
+	public SwapService(ProgressListener progressListener) {
+		this.progressListener = progressListener;
+	}
 
 	/**
 	 * 
@@ -72,7 +80,7 @@ public class SwapService {
 		
 		for (int from=0; from<frames.size(); from+=framesPerWorker) {
 			int to = Math.min(frames.size(), from+framesPerWorker);
-			workers.add(new SwapWorker(frames, from, to));
+			workers.add(new SwapWorker(frames, from, to, progressListener));
 		}
 		
 		return workers;

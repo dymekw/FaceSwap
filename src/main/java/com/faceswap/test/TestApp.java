@@ -19,7 +19,7 @@ public class TestApp extends FaceSwapAppFrame {
 	@Override
 	public void run() {
 		super.run();
-		WebcamListener webcamListener = new TestWebcamListener(new FramesProvider(webcam), new SwapService(), new MovieMaker());
+		WebcamListener webcamListener = new TestWebcamListener(new FramesProvider(webcam), new SwapService(null), new MovieMaker());
 		
 		webcam.addWebcamListener(webcamListener);
 	}

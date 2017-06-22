@@ -8,6 +8,7 @@
 	<properties>
 		<webcam-capture.version>0.3.10</webcam-capture.version>
 		<xuggle-xuggler.version>5.4</xuggle-xuggler.version>
+		<guava.version>22.0</guava.version>
 	</properties>
 
 	<build>
@@ -34,6 +35,22 @@
 			<groupId>xuggle</groupId>
 			<artifactId>xuggle-xuggler</artifactId>
 			<version>${xuggle-xuggler.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
 		</dependency>
 	</dependencies>
 	<!--<pluginRepositories> <pluginRepository> <id>central</id> <name>Central 
