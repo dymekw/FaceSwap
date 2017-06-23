@@ -1,8 +1,10 @@
 package com.faceswap.view.listeners;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -11,8 +13,11 @@ import java.util.concurrent.ConcurrentMap;
 import javax.swing.AbstractButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 
 import com.faceswap.controller.FramesProvider;
@@ -43,6 +48,7 @@ public class RecordingButtonListener implements ActionListener {
 			buttonInstance.setEnabled(false);
 			buttonInstance.setText("Start recording");
 			displayProgressDialog(service);
+			buttonInstance.setEnabled(true);
 		}
 	}
 	
@@ -52,13 +58,22 @@ public class RecordingButtonListener implements ActionListener {
 		progressDialog.setUndecorated(true);
 		progressDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		
-		Dimension dialogSize = new Dimension(2*parentFrameInstance.getWidth()/3, parentFrameInstance.getHeight()/3);
+		Dimension dialogSize = new Dimension(2*parentFrameInstance.getWidth()/3, parentFrameInstance.getHeight()/4);
 		progressDialog.setMinimumSize(dialogSize);
 		progressDialog.setSize(dialogSize);
 		progressDialog.setResizable(false);
 		progressDialog.setLocationRelativeTo(parentFrameInstance);
 		
-		progressDialog.add(getProgressBar(progressDialog));
+		progressDialog.setLayout(new GridLayout(3,1));
+		progressDialog.add(new JLabel("Swapping in progress, please wait...", SwingConstants.CENTER));
+		
+		JPanel progressBarPanel = new JPanel(new BorderLayout());
+		progressBarPanel.add(new JPanel(), BorderLayout.NORTH);
+		progressBarPanel.add(getProgressBar(progressDialog), BorderLayout.CENTER);
+		progressBarPanel.add(new JPanel(), BorderLayout.WEST);
+		
+		progressDialog.add(progressBarPanel);
+		progressDialog.add(new JLabel("Movie will be saved as myMovie.mp4", SwingConstants.CENTER));
 
 		progressDialog.pack();
 		progressDialog.setVisible(true);
@@ -107,7 +122,6 @@ public class RecordingButtonListener implements ActionListener {
 		}
 
 		private void createMovie(ConcurrentMap<Integer, BufferedImage> frames) {
-			System.out.println("RecordingButtonListener.BackgroundWorker.createMovie()");
 			movieMaker.saveAsMovie(swapService.processImages(frames), FILE_NAME);
 		}
 	}

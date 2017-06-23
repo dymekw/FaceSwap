@@ -1,17 +1,23 @@
 package com.faceswap.view;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowListener;
 
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.BasicConfigurator;
 
 import com.faceswap.controller.FramesProvider;
+import com.faceswap.view.fileFilter.ImageFilter;
 import com.faceswap.view.listeners.FaceSwapItemListener;
 import com.faceswap.view.listeners.FaceSwapWebcamDiscoveryListener;
 import com.faceswap.view.listeners.FaceSwapWebcamListener;
@@ -34,6 +40,9 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 	protected JToggleButton recordingButton = createStartRecordingButton();
 	protected FramesProvider framesProvider = null;
 	
+	protected JFileChooser fileChooser = new JFileChooser();
+	protected ImagePanel imagePanel = ImagePanel.get();
+	
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
 		SwingUtilities.invokeLater(new FaceSwapAppFrame());
@@ -45,6 +54,9 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		setTitle("FaceSwap hołm ediszyn");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
+		
+		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.setFileFilter(new ImageFilter());
 		
 		WebcamListener webcamListener = new FaceSwapWebcamListener(recordingButton);
 		
@@ -74,8 +86,18 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		addWindowListener(windowListener);
 		
 		add(picker, BorderLayout.NORTH);
-		add(panel, BorderLayout.CENTER);
-		add(recordingButton, BorderLayout.SOUTH);
+		
+		JPanel southPanel = new JPanel(new GridLayout(1, 2));
+		southPanel.add(recordingButton);
+		southPanel.add(createChooseFileButton());
+		add(southPanel, BorderLayout.SOUTH);
+		
+		JPanel centerPanel = new JPanel();
+		centerPanel.setLayout(new GridLayout(1, 2));
+		centerPanel.add(panel);
+		centerPanel.add(imagePanel);
+		
+		add(centerPanel, BorderLayout.CENTER);
 		
 		pack();
 		setVisible(true);
@@ -97,6 +119,24 @@ public class FaceSwapAppFrame extends JFrame implements Runnable {
 		startRecording.setEnabled(false);
 
 		return startRecording;
+	}
+	
+	private JButton createChooseFileButton() {
+		JButton result = new JButton("Choose face to swap");
+		
+		result.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int returnVal = fileChooser.showOpenDialog(FaceSwapAppFrame.this);
+				
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					imagePanel.loadImage(fileChooser.getSelectedFile());
+		        }
+			}
+		});
+		
+		return result;
 	}
 	
 	private ActionListener createRecordingButtonListener(FramesProvider framesProvider) {

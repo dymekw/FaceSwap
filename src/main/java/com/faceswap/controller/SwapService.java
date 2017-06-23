@@ -1,7 +1,5 @@
 package com.faceswap.controller;
 
-import static com.faceswap.Utils.STATIC_IMAGE;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collection;
@@ -17,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.faceswap.view.ImagePanel;
 import com.faceswap.view.listeners.ProgressListener;
 
 public class SwapService {
@@ -39,7 +38,7 @@ public class SwapService {
 	public BufferedImage[] processImages(ConcurrentMap<Integer, BufferedImage> frames) {
 		long start = System.currentTimeMillis();
 		try {
-			Runtime.getRuntime().exec("python get_landmarks.py " + STATIC_IMAGE).waitFor();
+			Runtime.getRuntime().exec(getPythonCommand()).waitFor();
 		} catch (InterruptedException | IOException e) {
 			System.err.println(e.getMessage());
 		}
@@ -84,5 +83,13 @@ public class SwapService {
 		}
 		
 		return workers;
+	}
+	
+	private String[] getPythonCommand() {
+		return new String[] {
+			"python",
+			"get_landmarks.py",
+			ImagePanel.get().getPath()
+		};
 	}
 }

@@ -7,13 +7,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.imageio.ImageIO;
 
-import com.faceswap.Utils;
+import com.faceswap.view.ImagePanel;
 import com.faceswap.view.listeners.ProgressListener;
 
 public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
@@ -25,6 +24,7 @@ public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
     private Integer from;
     private Integer to;
     private ProgressListener progressListener;
+    private String filePath;
 
     
     public SwapWorker(ConcurrentMap<Integer, BufferedImage> images, Integer from, Integer to, ProgressListener progressListener) {
@@ -32,6 +32,7 @@ public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
     	this.from = from;
     	this.to = to;
     	this.progressListener = progressListener;
+    	this.filePath = ImagePanel.get().getPath();
     }
     
     @Override
@@ -71,19 +72,14 @@ public class SwapWorker implements Callable<Map<Integer, BufferedImage>> {
 		return executeSwapping;
     }
 	
-	private String getPythonBulkCommand(String fileName, int from, int to) {
-		StringJoiner joiner = new StringJoiner(" ");
-		String[] command = {
+	private String[] getPythonBulkCommand(String fileName, int from, int to) {
+		return new String[] {
 				"python",
 				"faceswap.py",
 				fileName,
-				Utils.STATIC_IMAGE,
+				filePath,
 				Integer.toString(from),
 				Integer.toString(to)
 		};
-		for (String cmd : command) {
-			joiner.add(cmd);
-		}
-		return joiner.toString();
 	}
 }
